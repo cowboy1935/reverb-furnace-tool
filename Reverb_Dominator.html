@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reverb Furnace Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 0.75rem;
+      background: #111;
+      color: #f5f5f5;
+    }
+    h1, h2, h3 {
+      margin: 0.25rem 0 0.5rem;
+    }
+    h1 {
+      font-size: 1.25rem;
+      text-align: center;
+    }
+    h2 {
+      font-size: 1rem;
+      margin-top: 0.75rem;
+      border-bottom: 1px solid #333;
+      padding-bottom: 0.25rem;
+    }
+    .card {
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      background: #1b1b1b;
+      box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.6);
+    }
+    label {
+      display: block;
+      font-size: 0.75rem;
+      margin-bottom: 0.15rem;
+      color: #ccc;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 0.35rem 0.5rem;
+      border-radius: 0.4rem;
+      border: 1px solid #444;
+      background: #111;
+      color: #f5f5f5;
+      font-size: 0.85rem;
+      margin-bottom: 0.35rem;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .col-50 {
+      flex: 0 0 calc(50% - 0.25rem);
+    }
+    .col-33 {
+      flex: 0 0 calc(33.333% - 0.35rem);
+    }
+    .btn {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-primary {
+      background: #0ea5e9;
+      color: #020617;
+    }
+    .btn-secondary {
+      background: #27272a;
+      color: #e5e5e5;
+    }
+    .btn-small {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.7rem;
+      margin-left: 0.25rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-outline {
+      background: #020617;
+      color: #e5e5e5;
+      border: 1px solid #374151;
+    }
+    .output-line {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+    .tag {
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-left: 0.25rem;
+    }
+    .tag-green { background: #22c55e22; color: #4ade80; border: 1px solid #22c55e55; }
+    .tag-yellow { background: #eab30822; color: #fde047; border: 1px solid #eab30855; }
+    .tag-red { background: #ef444422; color: #fca5a5; border: 1px solid #ef444455; }
+    .lambda-value {
+      font-variant-numeric: tabular-nums;
+    }
+    small {
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+    .section-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 0.4rem;
+      border-radius: 999px;
+      border: 1px solid #27272a;
+      background: #020617;
+      color: #e5e5e5;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .tab-btn-active {
+      background: #0ea5e9;
+      color: #020617;
+      border-color: #0ea5e9;
+      font-weight: 600;
+    }
+    #tabCalc, #tabDiag, #tabPresets {
+      animation: fadeIn 0.15s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    ul {
+      padding-left: 1rem;
+      margin: 0.25rem 0;
+    }
+    li {
+      font-size: 0.8rem;
+      margin-bottom: 0.25rem;
+    }
+    .diag-section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #9ca3af;
+      margin-top: 0.25rem;
+      margin-bottom: 0.1rem;
+    }
+    .preset-group-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #9ca3af;
+      margin-top: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+    .preset-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      margin-bottom: 0.25rem;
+      padding: 0.25rem 0.4rem;
+      border-radius: 0.4rem;
+      background: #020617;
+      border: 1px solid #27272a;
+    }
+    .preset-name {
+      font-weight: 500;
+    }
+    .preset-actions {
+      display: flex;
+      gap: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Reverb Furnace Tool</h1>
+
+  <div class="tabs">
+    <button class="tab-btn tab-btn-active" id="btnCalc" onclick="showTab('calc')">Calculator</button>
+    <button class="tab-btn" id="btnDiag" onclick="showTab('diag')">Diagnostics</button>
+    <button class="tab-btn" id="btnPresets" onclick="showTab('presets')">Presets</button>
+  </div>
+
+  <!-- CALCULATOR TAB -->
+  <div id="tabCalc">
+    <!-- PHYSICAL + PROCESS CONSTANTS -->
+    <div class="card">
+      <div class="section-title-row">
+        <h2>1. Furnace & Feed</h2>
+        <small>Configure once, then tweak</small>
+      </div>
+      <div class="row">
+        <div class="col-50">
+          <label>Kettle diameter (ft)</label>
+          <input id="diameterFt" type="number" value="18" step="0.1" />
+        </div>
+        <div class="col-50">
+          <label>Base furnace efficiency η<sub>base</sub> (0–1)</label>
+          <input id="etaBase" type="number" value="0.5" step="0.01" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-50">
+          <label>Feed rate (tph, wet)</label>
+          <input id="feedTph" type="number" value="30" step="0.1" />
+        </div>
+        <div class="col-50">
+          <label>Lead fraction of dry feed</label>
+          <input id="leadFracDry" type="number" value="0.6" step="0.01" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-50">
+          <label>Moisture IN to kiln (fraction)</label>
+          <input id="moistIn" type="number" value="0.10" step="0.01" />
+        </div>
+        <div class="col-50">
+          <label>Moisture OUT of kiln (fraction)</label>
+          <input id="moistOut" type="number" value="0.03" step="0.01" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-50">
+          <label>Feed temperature (°F)</label>
+          <input id="Tfeed" type="number" value="80" step="5" />
+        </div>
+        <div class="col-50">
+          <label>Bath temperature (°F)</label>
+          <input id="Tbath" type="number" value="1350" step="10" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-50">
+          <label>Off-gas steam exit temp (°F)</label>
+          <input id="Toffgas" type="number" value="1400" step="10" />
+        </div>
+        <div class="col-50">
+          <label>Target melt rate (in/hr)</label>
+          <input id="targetInHr" type="number" value="7" step="0.1" />
+        </div>
+      </div>
+    </div>
+
+    <!-- BURNER INPUTS -->
+    <div class="card">
+      <div class="section-title-row">
+        <h2>2. Burner Firing (Current)</h2>
+        <small>SCFH & multipliers</small>
+      </div>
+      <div class="row">
+        <div class="col-33">
+          <label>Endwall gas (SCFH)</label>
+          <input id="gasEW" type="number" value="13000" step="100" />
+        </div>
+        <div class="col-33">
+          <label>Side A gas (SCFH)</label>
+          <input id="gasA" type="number" value="4000" step="50" />
+        </div>
+        <div class="col-33">
+          <label>Side B gas (SCFH)</label>
+          <input id="gasB" type="number" value="1000" step="50" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-33">
+          <label>Endwall O₂ multiplier</label>
+          <input id="o2EW" type="number" value="1.60" step="0.01" />
+        </div>
+        <div class="col-33">
+          <label>Side A O₂ multiplier</label>
+          <input id="o2A" type="number" value="1.40" step="0.01" />
+        </div>
+        <div class="col-33">
+          <label>Side B O₂ multiplier</label>
+          <input id="o2B" type="number" value="1.20" step="0.01" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-33">
+          <label>Endwall Air multiplier</label>
+          <input id="airEW" type="number" value="4.16" step="0.01" />
+        </div>
+        <div class="col-33">
+          <label>Side A Air multiplier</label>
+          <input id="airA" type="number" value="4.00" step="0.01" />
+        </div>
+        <div class="col-33">
+          <label>Side B Air multiplier</label>
+          <input id="airB" type="number" value="4.00" step="0.01" />
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="runCalc()">Calculate</button>
+      <button class="btn btn-secondary" onclick="resetDefaults()">Reset defaults</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="card">
+      <div class="section-title-row">
+        <h2>3. Results</h2>
+        <small>Predicted capability & recommendations</small>
+      </div>
+      <div class="output-line">
+        <span>Melt capacity at current firing:</span>
+        <span id="outInHr">– in/hr</span>
+      </div>
+      <div class="output-line">
+        <span>Target melt rate:</span>
+        <span id="outTargetInHr">– in/hr</span>
+      </div>
+      <div class="output-line">
+        <span>Heat input (current):</span>
+        <span id="outQBurner">– MMBTU/hr</span>
+      </div>
+      <div class="output-line">
+        <span>Heat required (target):</span>
+        <span id="outQReq">– MMBTU/hr</span>
+      </div>
+      <div class="output-line">
+        <span>Overall efficiency η<sub>effective</sub>:</span>
+        <span id="outEtaEff">–</span>
+      </div>
+      <div class="output-line">
+        <span>Heat margin:</span>
+        <span id="outMargin">–</span>
+      </div>
+
+      <div class="output-line">
+        <span>Status:</span>
+        <span id="outStatusTag"></span>
+      </div>
+    </div>
+
+    <!-- LAMBDA & RECOMMENDED SETPOINTS -->
+    <div class="card">
+      <div class="section-title-row">
+        <h2>4. λ & Recommended Gas Split</h2>
+        <small>Simple guidance</small>
+      </div>
+
+      <div class="output-line">
+        <span>λ Endwall (approx = O₂ mult):</span>
+        <span id="lambdaEW" class="lambda-value"></span>
+      </div>
+      <div class="output-line">
+        <span>λ Side A:</span>
+        <span id="lambdaA" class="lambda-value"></span>
+      </div>
+      <div class="output-line">
+        <span>λ Side B:</span>
+        <span id="lambdaB" class="lambda-value"></span>
+      </div>
+
+      <h3>Suggested gas for target melt</h3>
+      <div class="output-line">
+        <span>Total gas required:</span>
+        <span id="outGasTotalReq">– SCFH</span>
+      </div>
+      <div class="output-line">
+        <span>Endwall gas suggested:</span>
+        <span id="outGasEWReq">– SCFH</span>
+      </div>
+      <div class="output-line">
+        <span>Side A gas suggested:</span>
+        <span id="outGasAReq">– SCFH</span>
+      </div>
+      <div class="output-line">
+        <span>Side B gas suggested:</span>
+        <span id="outGasBReq">– SCFH</span>
+      </div>
+
+      <small>
+        Notes:<br/>
+        • λ here is approximated from the O₂ multiplier (1.0 ≈ stoich, &gt;1 = excess O₂).<br/>
+        • Efficiency penalty increases as O₂ and Air multipliers rise above 1.0 and 4.0 respectively.<br/>
+        • Tune η<sub>base</sub>, heating value, and penalty curves to match your furnace.
+      </small>
+    </div>
+  </div>
+
+  <!-- DIAGNOSTICS TAB -->
+  <div id="tabDiag" style="display:none;">
+    <div class="card">
+      <div class="section-title-row">
+        <h2>Diagnostics</h2>
+        <small>Based on last calculation</small>
+      </div>
+      <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+        These messages are generated from the current inputs and calculation. If you change inputs,
+        hit <b>Calculate</b> on the Calculator tab, then come back here.
+      </p>
+
+      <div id="diagContent">
+        <p style="font-size:0.8rem; color:#6b7280;">Run a calculation first to populate diagnostics.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRESETS TAB -->
+  <div id="tabPresets" style="display:none;">
+    <div class="card">
+      <div class="section-title-row">
+        <h2>Presets</h2>
+        <small>Save & recall full furnace states</small>
+      </div>
+      <p style="font-size:0.8rem; color:#9ca3af; margin-top:0;">
+        Presets store <b>all</b> current values: burners, feed, moisture, temperatures, efficiency, diameter, target in/hr.
+        Use them to capture troubleshooting conditions or “good run” setups.
+      </p>
+
+      <div id="presetsContainer"></div>
+
+      <button class="btn btn-primary" onclick="saveCurrentAsNewPreset()">
+        Save Current Settings as New Custom Preset
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const PRESET_KEY = "rf_presets_v1";
+
+    function showTab(name) {
+      const tabCalc = document.getElementById("tabCalc");
+      const tabDiag = document.getElementById("tabDiag");
+      const tabPresets = document.getElementById("tabPresets");
+      const btnCalc = document.getElementById("btnCalc");
+      const btnDiag = document.getElementById("btnDiag");
+      const btnPresets = document.getElementById("btnPresets");
+
+      tabCalc.style.display = "none";
+      tabDiag.style.display = "none";
+      tabPresets.style.display = "none";
+      btnCalc.classList.remove("tab-btn-active");
+      btnDiag.classList.remove("tab-btn-active");
+      btnPresets.classList.remove("tab-btn-active");
+
+      if (name === "calc") {
+        tabCalc.style.display = "";
+        btnCalc.classList.add("tab-btn-active");
+      } else if (name === "diag") {
+        tabDiag.style.display = "";
+        btnDiag.classList.add("tab-btn-active");
+      } else {
+        tabPresets.style.display = "";
+        btnPresets.classList.add("tab-btn-active");
+      }
+    }
+
+    function resetDefaults() {
+      document.getElementById("diameterFt").value = 18;
+      document.getElementById("etaBase").value = 0.5;
+      document.getElementById("feedTph").value = 30;
+      document.getElementById("leadFracDry").value = 0.6;
+      document.getElementById("moistIn").value = 0.10;
+      document.getElementById("moistOut").value = 0.03;
+      document.getElementById("Tfeed").value = 80;
+      document.getElementById("Tbath").value = 1350;
+      document.getElementById("Toffgas").value = 1400;
+      document.getElementById("targetInHr").value = 7;
+
+      document.getElementById("gasEW").value = 13000;
+      document.getElementById("gasA").value = 4000;
+      document.getElementById("gasB").value = 1000;
+
+      document.getElementById("o2EW").value = 1.60;
+      document.getElementById("o2A").value = 1.40;
+      document.getElementById("o2B").value = 1.20;
+
+      document.getElementById("airEW").value = 4.16;
+      document.getElementById("airA").value = 4.00;
+      document.getElementById("airB").value = 4.00;
+
+      runCalc();
+    }
+
+    function lambdaTag(lambda) {
+      let cls = "tag tag-green";
+      let txt = "OK";
+
+      if (lambda < 0.98 || lambda > 1.30) {
+        cls = "tag tag-red";
+        txt = "Risk";
+      } else if (lambda >= 1.15 && lambda <= 1.30) {
+        cls = "tag tag-yellow";
+        txt = "Watch";
+      }
+      return { cls, txt };
+    }
+
+    function statusTag(marginMMBTU) {
+      let span = document.createElement("span");
+      span.className = "tag tag-green";
+      if (marginMMBTU < -0.5) {
+        span.className = "tag tag-red";
+        span.textContent = "DEFICIT – risk of low temp / lost melt";
+      } else if (marginMMBTU < 0) {
+        span.className = "tag tag-yellow";
+        span.textContent = "Tight – may drift low";
+      } else if (marginMMBTU < 1.0) {
+        span.textContent = "OK – near balance";
+      } else {
+        span.textContent = "Surplus – check for over-firing";
+      }
+      return span;
+    }
+
+    function buildDiagnostics(ctx) {
+      const diagDiv = document.getElementById("diagContent");
+      diagDiv.innerHTML = "";
+
+      const {
+        inchesPerHr,
+        targetInHr,
+        marginMMBTU,
+        lamEW,
+        lamA,
+        lamB,
+        leadTph,
+        leadTphTarget,
+        feedTph,
+        moistureDelta,
+        etaEff
+      } = ctx;
+
+      const sections = [];
+
+      // Overall performance
+      const overall = [];
+      if (inchesPerHr <= 0 || isNaN(inchesPerHr)) {
+        overall.push("Calculation did not produce a valid melt rate. Check inputs (geometry, feed, temps, gas).");
+      } else {
+        const diffIn = inchesPerHr - targetInHr;
+        const diffPct = (diffIn / targetInHr) * 100;
+
+        if (diffIn >= 0.5) {
+          overall.push(
+            `Furnace has headroom: predicted ${inchesPerHr.toFixed(2)} in/hr vs target ` +
+            `${targetInHr.toFixed(2)} in/hr (${diffPct.toFixed(1)}% above target).`
+          );
+        } else if (diffIn <= -0.5) {
+          overall.push(
+            `Furnace is under target: predicted ${inchesPerHr.toFixed(2)} in/hr vs target ` +
+            `${targetInHr.toFixed(2)} in/hr (${diffPct.toFixed(1)}% below target).`
+          );
+          overall.push("Expect bath temperature to trend down unless gas/O₂ is increased or feed is reduced.");
+        } else {
+          overall.push(
+            `Furnace is near target: ${inchesPerHr.toFixed(2)} in/hr vs ` +
+            `${targetInHr.toFixed(2)} in/hr. Small adjustments only if temps drift.`
+          );
+        }
+
+        overall.push(
+          `Lead throughput: model sees ~${leadTph.toFixed(2)} tph current vs ` +
+          `${leadTphTarget.toFixed(2)} tph required for the target melt rate.`
+        );
+      }
+
+      // Heat balance
+      const heat = [];
+      if (marginMMBTU < -0.5) {
+        heat.push(
+          `Heat deficit of ${marginMMBTU.toFixed(2)} MMBTU/hr. ` +
+          "This is a strong indicator of low-temp-warn/alarm risk if sustained."
+        );
+        heat.push("Consider increasing total gas input or reducing feed until the deficit is removed.");
+      } else if (marginMMBTU < 0) {
+        heat.push(
+          `Slight heat deficit of ${marginMMBTU.toFixed(2)} MMBTU/hr. ` +
+          "System may be stable short-term but vulnerable to disturbances."
+        );
+      } else if (marginMMBTU < 1.0) {
+        heat.push(
+          `Small positive margin of ${marginMMBTU.toFixed(2)} MMBTU/hr. ` +
+          "Near balance; efficiency tuning (O₂ / air) can buy extra stability."
+        );
+      } else {
+        heat.push(
+          `Heat surplus of ${marginMMBTU.toFixed(2)} MMBTU/hr. ` +
+          "Check for over-firing, roof impingement, or unnecessary fuel use."
+        );
+      }
+      heat.push(`Effective efficiency η_eff = ${etaEff.toFixed(3)} (includes O₂/air penalties).`);
+
+      // λ / O2 diagnostics
+      const lambdaSec = [];
+      const lambdas = [
+        { name: "Endwall", val: lamEW },
+        { name: "Side A", val: lamA },
+        { name: "Side B", val: lamB }
+      ];
+
+      lambdas.forEach(z => {
+        if (z.val < 0.98) {
+          lambdaSec.push(`${z.name}: λ ≈ ${z.val.toFixed(3)} → rich/reducing side; watch metal quality and slag.`);
+        } else if (z.val > 1.30) {
+          lambdaSec.push(`${z.name}: λ ≈ ${z.val.toFixed(3)} → high excess O₂; flue losses and efficiency penalty.`);
+        } else if (z.val >= 1.15) {
+          lambdaSec.push(`${z.name}: λ ≈ ${z.val.toFixed(3)} → moderate excess O₂; probably safe but not optimal.`);
+        } else {
+          lambdaSec.push(`${z.name}: λ ≈ ${z.val.toFixed(3)} → near-stoich, generally good for efficiency.`);
+        }
+      });
+
+      const maxLam = Math.max(lamEW, lamA, lamB);
+      const minLam = Math.min(lamEW, lamA, lamB);
+      const deltaLam = maxLam - minLam;
+      if (deltaLam > 0.15) {
+        lambdaSec.push(
+          `Zone imbalance: λ varies by ~${deltaLam.toFixed(2)} between zones. ` +
+          "Likely uneven bath heating; consider rebalancing gas/O₂ split."
+        );
+      }
+
+      // Moisture / kiln-load diagnostic
+      const moistSec = [];
+      if (moistureDelta > 0.05) {
+        moistSec.push(
+          `High moisture removal load: inlet–outlet difference is ${(moistureDelta * 100).toFixed(1)}% of feed.`
+        );
+        moistSec.push(
+          "Expect additional BTU draw on kiln and furnace; verify kiln conditions and be cautious with feed spikes."
+        );
+      } else if (moistureDelta > 0.0) {
+        moistSec.push(
+          `Moderate moisture load: ${(moistureDelta * 100).toFixed(1)}% of feed removed in kiln. ` +
+          "Normal but increases sensitivity to wet feed."
+        );
+      } else {
+        moistSec.push(
+          "No net moisture removal modeled (check moisture IN/OUT). If that’s not realistic, adjust moisture values."
+        );
+      }
+
+      // Basic feed vs capacity sanity
+      const feedSec = [];
+      if (feedTph > 0 && leadTph > 0 && leadTphTarget > 0) {
+        if (leadTph > leadTphTarget * 1.1) {
+          feedSec.push(
+            "Lead mass in the feed is significantly above what is required for the target melt rate. " +
+            "If melt and temps are stable, you may be able to reduce gas slightly."
+          );
+        } else if (leadTph < leadTphTarget * 0.9) {
+          feedSec.push(
+            "Lead mass in feed is below what would match the target melt rate. " +
+            "If furnace is hot, you might be over-firing relative to actual load."
+          );
+        } else {
+          feedSec.push(
+            "Feed lead load is broadly consistent with the target melt rate. " +
+            "Fine-tune O₂/air for stability and efficiency."
+          );
+        }
+      }
+
+      function addSection(title, items) {
+        const hasItems = items.some(x => x && x.trim() !== "");
+        if (!hasItems) return;
+        const t = document.createElement("div");
+        t.className = "diag-section-title";
+        t.textContent = title;
+        diagDiv.appendChild(t);
+        const ul = document.createElement("ul");
+        items.forEach(msg => {
+          if (!msg || msg.trim() === "") return;
+          const li = document.createElement("li");
+          li.textContent = msg;
+          ul.appendChild(li);
+        });
+        diagDiv.appendChild(ul);
+      }
+
+      addSection("Overall performance", overall);
+      addSection("Heat balance & stability", heat);
+      addSection("O₂ / λ behaviour", lambdaSec);
+      addSection("Moisture & kiln load", moistSec);
+      addSection("Feed vs capacity", feedSec);
+
+      if (!diagDiv.hasChildNodes()) {
+        diagDiv.innerHTML = "<p style='font-size:0.8rem; color:#6b7280;'>No diagnostics generated.</p>";
+      }
+    }
+
+    function getCurrentSettings() {
+      return {
+        diameterFt: parseFloat(document.getElementById("diameterFt").value) || 0,
+        etaBase: parseFloat(document.getElementById("etaBase").value) || 0.4,
+        feedTph: parseFloat(document.getElementById("feedTph").value) || 0,
+        leadFracDry: parseFloat(document.getElementById("leadFracDry").value) || 0.5,
+        moistIn: parseFloat(document.getElementById("moistIn").value) || 0,
+        moistOut: parseFloat(document.getElementById("moistOut").value) || 0,
+        Tfeed: parseFloat(document.getElementById("Tfeed").value) || 80,
+        Tbath: parseFloat(document.getElementById("Tbath").value) || 1350,
+        Toffgas: parseFloat(document.getElementById("Toffgas").value) || 1400,
+        targetInHr: parseFloat(document.getElementById("targetInHr").value) || 7,
+        gasEW: parseFloat(document.getElementById("gasEW").value) || 0,
+        gasA: parseFloat(document.getElementById("gasA").value) || 0,
+        gasB: parseFloat(document.getElementById("gasB").value) || 0,
+        o2EW: parseFloat(document.getElementById("o2EW").value) || 1,
+        o2A: parseFloat(document.getElementById("o2A").value) || 1,
+        o2B: parseFloat(document.getElementById("o2B").value) || 1,
+        airEW: parseFloat(document.getElementById("airEW").value) || 4,
+        airA: parseFloat(document.getElementById("airA").value) || 4,
+        airB: parseFloat(document.getElementById("airB").value) || 4
+      };
+    }
+
+    function applySettings(s) {
+      if (!s) return;
+      document.getElementById("diameterFt").value = s.diameterFt ?? 18;
+      document.getElementById("etaBase").value = s.etaBase ?? 0.5;
+      document.getElementById("feedTph").value = s.feedTph ?? 30;
+      document.getElementById("leadFracDry").value = s.leadFracDry ?? 0.6;
+      document.getElementById("moistIn").value = s.moistIn ?? 0.10;
+      document.getElementById("moistOut").value = s.moistOut ?? 0.03;
+      document.getElementById("Tfeed").value = s.Tfeed ?? 80;
+      document.getElementById("Tbath").value = s.Tbath ?? 1350;
+      document.getElementById("Toffgas").value = s.Toffgas ?? 1400;
+      document.getElementById("targetInHr").value = s.targetInHr ?? 7;
+
+      document.getElementById("gasEW").value = s.gasEW ?? 13000;
+      document.getElementById("gasA").value = s.gasA ?? 4000;
+      document.getElementById("gasB").value = s.gasB ?? 1000;
+
+      document.getElementById("o2EW").value = s.o2EW ?? 1.60;
+      document.getElementById("o2A").value = s.o2A ?? 1.40;
+      document.getElementById("o2B").value = s.o2B ?? 1.20;
+
+      document.getElementById("airEW").value = s.airEW ?? 4.16;
+      document.getElementById("airA").value = s.airA ?? 4.00;
+      document.getElementById("airB").value = s.airB ?? 4.00;
+    }
+
+    function loadPresets() {
+      try {
+        const raw = localStorage.getItem(PRESET_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !Array.isArray(parsed.items)) return null;
+        return parsed;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function savePresets(obj) {
+      try {
+        localStorage.setItem(PRESET_KEY, JSON.stringify(obj));
+      } catch (e) {
+        // ignore storage errors
+      }
+    }
+
+    function initDefaultPresetsIfNeeded() {
+      let data = loadPresets();
+      if (data) return data;
+
+      // First-time setup: build default presets using current form values
+      const baseSettings = getCurrentSettings();
+      const now = Date.now();
+      const items = [];
+
+      function makePreset(idSuffix, group, name) {
+        return {
+          id: "preset_" + idSuffix,
+          group, // "EW", "SA", "SB", "CUSTOM"
+          name,
+          data: baseSettings,
+          created: new Date().toISOString()
+        };
+      }
+
+      items.push(makePreset(now + "_ew1", "EW", "EW Preset 1"));
+      items.push(makePreset(now + "_ew2", "EW", "EW Preset 2"));
+      items.push(makePreset(now + "_ew3", "EW", "EW Preset 3"));
+
+      items.push(makePreset(now + "_sa1", "SA", "SA Preset 1"));
+      items.push(makePreset(now + "_sa2", "SA", "SA Preset 2"));
+      items.push(makePreset(now + "_sa3", "SA", "SA Preset 3"));
+
+      items.push(makePreset(now + "_sb1", "SB", "SB Preset 1"));
+      items.push(makePreset(now + "_sb2", "SB", "SB Preset 2"));
+      items.push(makePreset(now + "_sb3", "SB", "SB Preset 3"));
+
+      const obj = { version: 1, items };
+      savePresets(obj);
+      return obj;
+    }
+
+    function renderPresets() {
+      const container = document.getElementById("presetsContainer");
+      container.innerHTML = "";
+      const data = initDefaultPresetsIfNeeded();
+      const items = data.items || [];
+
+      function renderGroup(title, groupCode, allowDelete) {
+        const groupItems = items.filter(p => p.group === groupCode);
+        const hasItems = groupItems.length > 0;
+        if (!hasItems && groupCode !== "CUSTOM") return;
+
+        const titleDiv = document.createElement("div");
+        titleDiv.className = "preset-group-title";
+        titleDiv.textContent = title;
+        container.appendChild(titleDiv);
+
+        if (!hasItems && groupCode === "CUSTOM") {
+          const p = document.createElement("p");
+          p.style.fontSize = "0.8rem";
+          p.style.color = "#6b7280";
+          p.textContent = "No custom presets saved yet.";
+          container.appendChild(p);
+          return;
+        }
+
+        groupItems.forEach(preset => {
+          const row = document.createElement("div");
+          row.className = "preset-row";
+
+          const left = document.createElement("div");
+          left.className = "preset-name";
+          left.textContent = preset.name;
+
+          const right = document.createElement("div");
+          right.className = "preset-actions";
+
+          const loadBtn = document.createElement("button");
+          loadBtn.className = "btn-small btn-outline";
+          loadBtn.textContent = "Load";
+          loadBtn.onclick = function () {
+            applySettings(preset.data);
+            runCalc();
+            showTab("calc"); // auto-switch back
+          };
+
+          const overwriteBtn = document.createElement("button");
+          overwriteBtn.className = "btn-small btn-outline";
+          overwriteBtn.textContent = "Overwrite";
+          overwriteBtn.onclick = function () {
+            const current = getCurrentSettings();
+            preset.data = current;
+            preset.updated = new Date().toISOString();
+            savePresets(data);
+            alert("Preset \"" + preset.name + "\" updated with current settings.");
+          };
+
+          const renameBtn = document.createElement("button");
+          renameBtn.className = "btn-small btn-outline";
+          renameBtn.textContent = "Rename";
+          renameBtn.onclick = function () {
+            const newName = prompt("New name for preset:", preset.name);
+            if (newName && newName.trim() !== "") {
+              preset.name = newName.trim();
+              preset.updated = new Date().toISOString();
+              savePresets(data);
+              renderPresets();
+            }
+          };
+
+          right.appendChild(loadBtn);
+          right.appendChild(overwriteBtn);
+          right.appendChild(renameBtn);
+
+          if (allowDelete) {
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "btn-small btn-outline";
+            deleteBtn.style.color = "#fca5a5";
+            deleteBtn.textContent = "Delete";
+            deleteBtn.onclick = function () {
+              if (confirm("Delete preset \"" + preset.name + "\"?")) {
+                const idx = data.items.findIndex(p => p.id === preset.id);
+                if (idx >= 0) {
+                  data.items.splice(idx, 1);
+                  savePresets(data);
+                  renderPresets();
+                }
+              }
+            };
+            right.appendChild(deleteBtn);
+          }
+
+          row.appendChild(left);
+          row.appendChild(right);
+          container.appendChild(row);
+        });
+      }
+
+      renderGroup("Endwall presets", "EW", false);
+      renderGroup("Side A presets", "SA", false);
+      renderGroup("Side B presets", "SB", false);
+      renderGroup("Custom presets", "CUSTOM", true);
+    }
+
+    function saveCurrentAsNewPreset() {
+      const data = initDefaultPresetsIfNeeded();
+      const items = data.items || [];
+      const name = prompt("Name for this custom preset:", "Custom Preset " + (items.length + 1));
+      if (!name || name.trim() === "") return;
+
+      const current = getCurrentSettings();
+      const preset = {
+        id: "preset_custom_" + Date.now(),
+        group: "CUSTOM",
+        name: name.trim(),
+        data: current,
+        created: new Date().toISOString()
+      };
+
+      items.push(preset);
+      data.items = items;
+      savePresets(data);
+      renderPresets();
+      alert("Custom preset \"" + preset.name + "\" saved.");
+    }
+
+    function runCalc() {
+      const pi = Math.PI;
+
+      // Read inputs
+      const s = getCurrentSettings();
+      const {
+        diameterFt, etaBase, feedTph, leadFracDry, moistIn, moistOut,
+        Tfeed, Tbath, Toffgas, targetInHr,
+        gasEW, gasA, gasB,
+        o2EW, o2A, o2B,
+        airEW, airA, airB
+      } = s;
+
+      // 1) Geom – tons per inch
+      const leadDensity = 710; // lb/ft^3
+      const inchFt = 1.0 / 12.0;
+      const V_inch = pi * Math.pow(diameterFt / 2.0, 2) * inchFt; // ft^3
+      const m_inch_lb = V_inch * leadDensity;
+      const tonsPerInch = m_inch_lb / 2000.0;
+
+      // 2) Feed side
+      const dryTph = feedTph * (1 - moistIn);
+      const leadTph = dryTph * leadFracDry;
+      const waterRemovedTph = feedTph * Math.max(moistIn - moistOut, 0);
+      const moistureDelta = Math.max(moistIn - moistOut, 0);
+
+      // 3) Energy for lead (BTU)
+      const Tmelt = 621; // °F
+      const cPb = 0.039;    // BTU/lb°F
+      const cPbLiq = 0.05;  // BTU/lb°F
+      const Lf = 10;        // BTU/lb
+
+      const qPbHeat = cPb * Math.max(Tmelt - Tfeed, 0);
+      const qPbMelt = Lf;
+      const qPbSuper = cPbLiq * Math.max(Tbath - Tmelt, 0);
+      const qPbTotal = qPbHeat + qPbMelt + qPbSuper; // BTU/lb
+
+      const Q_Pb = qPbTotal * leadTph * 2000; // BTU/hr
+
+      // 4) Energy for water removal (BTU)
+      const cw = 1.0;          // BTU/lb°F
+      const Lv = 970;          // BTU/lb
+      const T_evap = 212;      // °F
+      const cSteam = 0.48;     // BTU/lb°F
+
+      const qH2OHeat = cw * Math.max(T_evap - Tfeed, 0);
+      const qH2OEvap = Lv;
+      const qH2OSuper = cSteam * Math.max(Toffgas - T_evap, 0);
+      const qH2OTotal = qH2OHeat + qH2OEvap + qH2OSuper; // BTU/lb
+
+      const Q_H2O = qH2OTotal * waterRemovedTph * 2000; // BTU/hr
+
+      // 5) Burner side
+      const gasTotal = gasEW + gasA + gasB;
+      const HVgas = 1000; // BTU/scf – adjust as needed
+      const Q_burner_avail = gasTotal * HVgas; // BTU/hr
+
+      // 6) Efficiency penalties from O2 & air
+      function zoneEffFactor(o2Mult, airMult) {
+        let fO2 = 1.0;
+        if (o2Mult > 1.0) {
+          fO2 = 1.0 - 0.01 * (o2Mult - 1.0); // approx 1% per 0.1 above 1.0
+        }
+        let fAir = 1.0;
+        if (airMult > 4.0) {
+          fAir = 1.0 - 0.005 * (airMult - 4.0); // approx 0.5% per 0.1 above 4.0
+        }
+        return Math.max(fO2 * fAir, 0.5); // cap penalty so it doesn't go insane
+      }
+
+      const zEW = zoneEffFactor(o2EW, airEW);
+      const zA = zoneEffFactor(o2A, airA);
+      const zB = zoneEffFactor(o2B, airB);
+
+      let effFactor = 1.0;
+      if (gasTotal > 0) {
+        effFactor = (zEW * gasEW + zA * gasA + zB * gasB) / gasTotal;
+      }
+
+      const etaEff = etaBase * effFactor;
+
+      // 7) Required Q for target rate
+      const leadTphTarget = targetInHr * tonsPerInch;
+      const Q_Pb_target = qPbTotal * leadTphTarget * 2000;
+      const Q_total_req = (Q_Pb_target + Q_H2O) / Math.max(etaEff, 0.01); // BTU/hr
+      const gasTotalReq = Q_total_req / HVgas; // SCFH
+
+      // 8) Melt capacity at current firing
+      const numerator = etaEff * Q_burner_avail - Q_H2O;
+      let leadTphMax = 0;
+      if (qPbTotal > 0 && numerator > 0) {
+        leadTphMax = numerator / (qPbTotal * 2000);
+      }
+      const inchesPerHr = tonsPerInch > 0 ? (leadTphMax / tonsPerInch) : 0;
+
+      // 9) Gas split for suggested setpoints
+      let fEW = 0.0, fA = 0.0, fB = 0.0;
+      if (gasTotal > 0) {
+        fEW = gasEW / gasTotal;
+        fA = gasA / gasTotal;
+        fB = gasB / gasTotal;
+      } else {
+        const sSum = 13000 + 4000 + 1000;
+        fEW = 13000 / sSum;
+        fA = 4000 / sSum;
+        fB = 1000 / sSum;
+      }
+
+      const gasEWReq = gasTotalReq * fEW;
+      const gasAReq = gasTotalReq * fA;
+      const gasBReq = gasTotalReq * fB;
+
+      // 10) λ approx = O2 multiplier
+      const lamEW = o2EW;
+      const lamA = o2A;
+      const lamB = o2B;
+
+      // 11) Heat margin
+      const marginBTU = (etaEff * Q_burner_avail) - (Q_Pb_target + Q_H2O);
+      const marginMMBTU = marginBTU / 1e6;
+
+      // Populate outputs (calculator tab)
+      document.getElementById("outInHr").textContent = inchesPerHr.toFixed(2) + " in/hr";
+      document.getElementById("outTargetInHr").textContent = targetInHr.toFixed(2) + " in/hr";
+      document.getElementById("outQBurner").textContent = (Q_burner_avail / 1e6).toFixed(2) + " MMBTU/hr";
+      document.getElementById("outQReq").textContent = (Q_total_req / 1e6).toFixed(2) + " MMBTU/hr";
+      document.getElementById("outEtaEff").textContent = etaEff.toFixed(3);
+      document.getElementById("outMargin").textContent = marginMMBTU.toFixed(2) + " MMBTU/hr";
+
+      const statusContainer = document.getElementById("outStatusTag");
+      statusContainer.innerHTML = "";
+      statusContainer.appendChild(statusTag(marginMMBTU));
+
+      // λ + tags
+      const lEW = lambdaTag(lamEW);
+      const lA = lambdaTag(lamA);
+      const lB = lambdaTag(lamB);
+
+      const lambdaEWSpan = document.getElementById("lambdaEW");
+      const lambdaASpan = document.getElementById("lambdaA");
+      const lambdaBSpan = document.getElementById("lambdaB");
+
+      lambdaEWSpan.innerHTML = lamEW.toFixed(3) + " ";
+      lambdaASpan.innerHTML = lamA.toFixed(3) + " ";
+      lambdaBSpan.innerHTML = lamB.toFixed(3) + " ";
+
+      const tagEW = document.createElement("span");
+      tagEW.className = lEW.cls;
+      tagEW.textContent = lEW.txt;
+      lambdaEWSpan.appendChild(tagEW);
+
+      const tagA = document.createElement("span");
+      tagA.className = lA.cls;
+      tagA.textContent = lA.txt;
+      lambdaASpan.appendChild(tagA);
+
+      const tagB = document.createElement("span");
+      tagB.className = lB.cls;
+      tagB.textContent = lB.txt;
+      lambdaBSpan.appendChild(tagB);
+
+      // Gas suggestions
+      document.getElementById("outGasTotalReq").textContent = gasTotalReq.toFixed(0) + " SCFH";
+      document.getElementById("outGasEWReq").textContent = gasEWReq.toFixed(0) + " SCFH";
+      document.getElementById("outGasAReq").textContent = gasAReq.toFixed(0) + " SCFH";
+      document.getElementById("outGasBReq").textContent = gasBReq.toFixed(0) + " SCFH";
+
+      // Build diagnostics context
+      const diagCtx = {
+        inchesPerHr,
+        targetInHr,
+        marginMMBTU,
+        lamEW,
+        lamA,
+        lamB,
+        leadTph,
+        leadTphTarget,
+        feedTph,
+        moistureDelta,
+        etaEff
+      };
+      buildDiagnostics(diagCtx);
+
+      // Re-render presets (if anything changed, overwriting uses these)
+      renderPresets();
+    }
+
+    // Initial run
+    initDefaultPresetsIfNeeded();
+    renderPresets();
+    runCalc();
+  </script>
+</body>
+</html>
